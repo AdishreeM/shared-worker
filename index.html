@@ -1,0 +1,52 @@
+<!DOCTYPE html5>
+<head>
+  <title>Shared Worker App</title>
+</head>
+<body>
+  <br>
+  <h3>Test your shared worker</h3>
+  <button onclick="pingShared()">Ping here</button>
+  <script>
+    var worker = new SharedWorker('shared-worker.js');
+    worker.port.start();
+    worker.port.onmessage = function(e) {
+      console.log('Main thread received a message from shared worker ', e);
+      document.getElementById("shared-worker").innerHTML = e;
+    }
+    worker.onerror = function(e) {
+      console.log('Shared worker error ', e.message,  " (" , e.filename , ":" , e.lineno , ")");
+      document.getElementById("shared-worker").innerHTML = e;
+    }
+    function pingShared(){
+      console.log('Pinging shared worker..');
+      worker.port.postMessage('ping');
+    }
+  </script>
+  <p id="shared-worker"></p>
+  <br>
+  <br>
+  <h3>Test your dedicated worker</h3>
+  <button onclick="pingWorker()">Ping here</button>
+  <script>
+    var worker_d;
+    if (typeof(Worker) !== "undefined") {
+      if (typeof(worker_d) == "undefined")
+      {
+        worker_d = new Worker("web-worker.js");
+      }
+      worker_d.onmessage = function(e) {
+        console.log('Main thread received a message from dedicated worker ', e.data);
+        document.getElementById("web-worker").innerHTML = e;
+      };
+      worker_d.onerror = function(e) {
+       console.log('Dedicated worker error ', e.data);
+       document.getElementById("web-worker").innerHTML = e;
+      };
+    }
+    function pingWorker(){
+      console.log('Pinging dedicated worker..');
+      worker_d.postMessage('ping');
+    }
+  </script>
+  <p id="web-worker"></p>
+</body>
